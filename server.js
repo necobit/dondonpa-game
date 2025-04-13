@@ -2,6 +2,7 @@ const express = require("express");
 const { SerialPort } = require("serialport");
 const WebSocket = require("ws");
 const path = require("path");
+const { getScoreEvaluation } = require("./openrouter-api"); // OpenRouter API モジュールをインポート
 
 const app = express();
 const port = 3000;
@@ -10,6 +11,22 @@ const port = 3000;
 app.use(express.static(path.join(__dirname)));
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "main.html"));
+});
+
+// スコア評価APIエンドポイント
+app.get("/api/score-evaluation", async (req, res) => {
+  try {
+    const score = parseInt(req.query.score) || 0;
+    const result = await getScoreEvaluation(score);
+    res.json(result);
+  } catch (error) {
+    console.error("評価API呼び出しエラー:", error);
+    res.status(500).json({
+      success: false,
+      message: "サーバーエラーが発生しました",
+      evaluation: "すごい！頑張りましたね！"
+    });
+  }
 });
 
 // シリアルポートの設定
